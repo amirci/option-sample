@@ -1,0 +1,13 @@
+packages/
+.paket/paket.exe
+obj/
+bin/
+*.userprefs
+*.swp
+*.*~
+*.*.suo
+build/
+tests/
+.fake/
+*.DotSettings.user
+.vs/
