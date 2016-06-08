@@ -21,15 +21,19 @@ module Regex =
       |> Gen.elements
       |> Gen.resize count)
 
+  let genPattern pattern fn =
+    matching pattern
+    |> Gen.map fn
+    |> Arb.fromGen
+
   type NotParseable = NotParseable of string with
     member x.Get = match x with NotParseable r -> r
     override x.ToString() = x.Get
 
   type Generator =
-    static member NotParseable() =
-      matching "[a-zA-Z]*"
-      |> Gen.map NotParseable
-      |> Arb.fromGen
+    static member NotParseable() = 
+      genPattern "[a-zA-Z]*" NotParseable
+
 
 
 module ``Option get`` =
@@ -53,7 +57,22 @@ module ``Option getOrElse`` =
 
 
 module ``Option map`` =
-
   [<Property>]
-  let ``maps the function when is Some`` (actual: NonEmptyString) =
+  let ``applies the function when is Some`` (actual: NonEmptyString) =
     actual.Get |> Some |> Option.map ((+) "Extra-") |> Option.get |> (=) ("Extra-" + actual.Get)
+
+  [<Fact>]
+  let ``returns None when is None`` () =
+    None |> Option.map ((+) "Extra-") |> Option.isNone
+
+
+module ``Option bind`` = 
+  [<Property(Arbitrary=[|typeof<Generator>|])>]
+  let ``When is Some applies the fn and returns an Option`` (num: int) =
+    num.ToString() |> Some |> Option.bind Int32.parse |> Option.get |> (=) num
+
+  [<Property(Arbitrary=[|typeof<Generator>|])>]
+  let ``When is None returns None`` (actual: NotParseable) =
+    actual.Get |> Some |> Option.bind Int32.parse |> Option.isNone
+
+
