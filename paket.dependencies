@@ -5,3 +5,4 @@ nuget FsCheck
 nuget FsCheck.Xunit
 nuget Unquote
 nuget Xunit.runner.console
+nuget Fare
