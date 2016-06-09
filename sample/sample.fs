@@ -20,23 +20,41 @@ module Example1 =
     |> Option.getOrElse -1
     |> findCustomers
 
-module Example2 =
+module Requests =
   type Result<'TData> =
     | Success of 'TData
     | Error of string
 
-  type Request() =
-    member this.tryGetParam str = None
+  type Request = Map<string, string>
 
-  let queryCustomers count country city = []
+  module Result =
+    let errorMsg = 
+      function
+      | Success _ -> failwith "Can't get error from Success"
+      | Error s -> s
+
+    let isSuccessful =
+      function
+      | Success _ -> true
+      | _ -> false
+
+  let mkRequest = Map.ofList
+
+  let tryParam = Map.tryFind
 
   let invalidRequest = "Boooo! Parameters are not present!"
 
+
+module Example2 =
+  open Requests
+
+  let queryCustomers count country city = ["Customer1"; "Customer2"]
+
   let doWebRequest (req:Request) =
     maybe {
-      let! strCount = req.tryGetParam "count"
-      let! city     = req.tryGetParam "city"
-      let! country  = req.tryGetParam "country"
+      let! strCount = req |> tryParam "count"
+      let! city     = req |> tryParam "city"
+      let! country  = req |> tryParam "country"
       let! count    = Int32.tryParse strCount
       return queryCustomers count country city
     }
@@ -44,14 +62,15 @@ module Example2 =
     |> Option.getOrElse (invalidRequest |> Error)
 
 module Example3 =
+  open Requests
   open Example2
 
-  let findCustomers count city country = []
+  let findCustomers count city country = ["Customer1"; "Customer2"]
 
   let doWebRequest (req:Request) =
-    let city    = req.tryGetParam "city"
-    let country = req.tryGetParam "country"
-    let count   = req.tryGetParam "count" >>= Int32.tryParse
+    let city    = req |> tryParam "city"
+    let country = req |> tryParam "country"
+    let count   = req |> tryParam "count" >>= Int32.tryParse
 
     findCustomers <!> count <*> city <*> country
     |> Option.map Success

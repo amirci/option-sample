@@ -35,7 +35,6 @@ module Regex =
       genPattern "[a-zA-Z]*" NotParseable
 
 
-
 module ``Option get`` =
   [<Property>]
   let ``Does not throw an exception with Some`` (actual: NonEmptyString) =
@@ -76,3 +75,70 @@ module ``Option bind`` =
     actual.Get |> Some |> Option.bind Int32.parse |> Option.isNone
 
 
+module ``Using maybe builder`` =
+  open sample.Requests
+  open sample.Example2
+
+  let isInvalid = mkRequest >> doWebRequest >> Result.errorMsg >> (=) invalidRequest
+
+  [<Fact>]
+  let ``a request without "count" returns invalid`` () =
+    <@ [ "city", "Madrid";"country", "Spain" ] |> isInvalid @>
+
+  [<Fact>]
+  let ``a request without "city" returns invalid`` () =
+    <@ [ "count", "3";"country", "Spain" ] |> isInvalid @>
+
+  [<Fact>]
+  let ``a request without "country" returns invalid`` () =
+    <@ [ "count", "3"; "city" , "Madrid" ] |> isInvalid @>
+
+
+  [<Fact>]
+  let ``a request that can not parse the count returns invalid`` () =
+    <@ [ "count", "a3"; "country", "Spain";"city" , "Madrid" ] |> isInvalid @>
+
+
+  [<Fact>]
+  let ``a request with valid parameters returns Succes for two customers`` () =
+    <@ 
+      [ "count", "3"; "country", "Spain";"city" , "Madrid" ] 
+      |> mkRequest
+      |> doWebRequest
+      |> Result.isSuccessful
+    @>
+    
+module ``Using applicative style`` =
+  open sample.Requests
+  open sample.Example3
+
+  let isInvalid = mkRequest >> doWebRequest >> Result.errorMsg >> (=) invalidRequest
+
+  [<Fact>]
+  let ``a request without "count" returns invalid`` () =
+    <@ [ "city", "Madrid";"country", "Spain" ] |> isInvalid @>
+
+  [<Fact>]
+  let ``a request without "city" returns invalid`` () =
+    <@ [ "count", "3";"country", "Spain" ] |> isInvalid @>
+
+  [<Fact>]
+  let ``a request without "country" returns invalid`` () =
+    <@ [ "count", "3"; "city" , "Madrid" ] |> isInvalid @>
+
+
+  [<Fact>]
+  let ``a request that can not parse the count returns invalid`` () =
+    <@ [ "count", "a3"; "country", "Spain";"city" , "Madrid" ] |> isInvalid @>
+
+
+  [<Fact>]
+  let ``a request with valid parameters returns Succes for two customers`` () =
+    <@ 
+      [ "count", "3"; "country", "Spain";"city" , "Madrid" ] 
+      |> mkRequest
+      |> doWebRequest
+      |> Result.isSuccessful
+    @>
+    
+    
