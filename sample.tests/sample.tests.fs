@@ -13,6 +13,7 @@ open FSharpx.Functional
 
 [<AutoOpen>]
 module Regex =
+  // matching function taken from http://blog.nikosbaxevanis.com/2015/09/25/regex-constrained-strings-with-fscheck/
   let matching pattern =
     Gen.sized (fun size ->
       let xeger = Xeger pattern
